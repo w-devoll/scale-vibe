@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weight Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        button:active { background: #0056b3; }
+        canvas { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Weight Tracker</h2>
+    <input type="number" id="weightInput" step="0.1" placeholder="Enter weight (kg or lbs)">
+    <button onclick="addEntry()">Log Weight</button>
+    <canvas id="weightChart"></canvas>
+</div>
+
+<script>
+    let weightData = JSON.parse(localStorage.getItem('weights')) || [];
+
+    function addEntry() {
+        const weight = document.getElementById('weightInput').value;
+        if (!weight) return;
+
+        const entry = { date: new Date().toLocaleDateString(), weight: parseFloat(weight) };
+        weightData.push(entry);
+        localStorage.setItem('weights', JSON.stringify(weightData));
+        document.getElementById('weightInput').value = '';
+        renderChart();
+    }
+
+    function renderChart() {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        if (window.myChart) window.myChart.destroy();
+        
+        window.myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: weightData.map(d => d.date),
+                datasets: [{
+                    label: 'Weight Over Time',
+                    data: weightData.map(d => d.weight),
+                    borderColor: '#007bff',
+                    tension: 0.1
+                }]
+            }
+        });
+    }
+    renderChart();
+</script>
+
+</body>
+</html>
