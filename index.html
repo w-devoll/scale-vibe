@@ -3,86 +3,635 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Weight Tracker</title>
+    <title>Scale Vibe | Weight Tracker</title>
+    <!-- Fonts: Akaya Kanadaka for all headers, Urbanist for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <!-- Chart.js for the visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #007AFF; --bg: #F2F2F7; --card: #FFFFFF; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 400px; }
-        .card { background: var(--card); padding: 24px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h1 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #1c1c1e; }
-        input { width: 100%; padding: 15px; border: 2px solid #efeff4; border-radius: 12px; font-size: 18px; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: border 0.2s; }
-        input:focus { border-color: var(--primary); }
-        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.1s; }
-        button:active { transform: scale(0.98); opacity: 0.9; }
-        #status { font-size: 12px; color: #8e8e93; text-align: center; margin-top: 10px; height: 15px; }
+        :root {
+            /* Palette */
+            --forest-deep: #344e41;
+            --fern: #588157;
+            --moss: #a3b18a;
+            --tea-green: #ccd5aeff;
+            --beige: #e9edc9ff;
+            --cornsilk: #fefae0ff;
+            --papaya-whip: #faedcdff;
+            --light-bronze: #d4a373ff;
+            
+            /* Functional Mapping */
+            --primary: var(--light-bronze);
+            --primary-dark: #bc8a5f;
+            --card: var(--papaya-whip);
+            --text-main: #4a4439;
+            --text-sub: #7a7366;
+            --danger: #e07a5f;
+            --accent: #9ba37e;
+            --success: #588157;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Urbanist', sans-serif;
+            /* Radial Gradient implementation */
+            background: radial-gradient(
+                circle at 50% 40%, 
+                var(--fern) 0%, 
+                #436742 40%,
+                var(--forest-deep) 85%,
+                #283b31 100%
+            );
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px; 
+            padding: 10px 4px;
+        }
+
+        h1, .chart-title, .input-header, .stat-label, .trend-header {
+            font-family: 'Akaya Kanadaka', system-ui;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        h1 {
+            font-size: 48px;
+            letter-spacing: -0.5px;
+            color: var(--cornsilk);
+            text-align: center;
+            line-height: 1.1;
+            /* Extra Graphic Block Shadow */
+            text-shadow: 
+                1px 1px 0px var(--fern),
+                2px 2px 0px var(--fern),
+                3px 3px 0px var(--fern),
+                4px 4px 0px var(--forest-deep),
+                5px 5px 0px var(--forest-deep),
+                6px 6px 0px var(--forest-deep),
+                7px 7px 0px var(--forest-deep),
+                8px 8px 0px rgba(0,0,0,0.5),
+                12px 12px 20px rgba(0,0,0,0.3);
+        }
+
+        .input-header {
+            font-size: 26px;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Trends Combined Component */
+        #trendsWrapper {
+            display: none;
+        }
+
+        .trend-header {
+            font-size: 26px;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .trends-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .trend-stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            background: rgba(212, 163, 115, 0.08);
+            border-radius: 20px;
+        }
+
+        .stat-label {
+            font-size: 18px;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        .trend-up { color: var(--danger); }
+        .trend-down { color: var(--success); }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        /* Removing Spinners */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+            font-family: 'Urbanist', sans-serif;
+            width: 100%;
+            padding: 18px;
+            border: 2px solid var(--beige);
+            border-radius: 18px;
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+            background: rgba(254, 250, 224, 0.6);
+            margin: 0;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.15);
+        }
+
+        button.primary-btn {
+            font-family: 'Urbanist', sans-serif;
+            width: 140px; 
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(212, 163, 115, 0.3);
+            letter-spacing: 0.5px;
+            text-transform: lowercase;
+        }
+
+        button.primary-btn:active {
+            transform: scale(0.97);
+            background: var(--primary-dark);
+        }
+
+        #status {
+            font-size: 16px;
+            color: var(--text-sub);
+            text-align: center;
+            margin-top: 12px;
+            height: 18px;
+            font-family: 'Akaya Kanadaka', system-ui;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 24px;
+            color: var(--text-main);
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(212, 163, 115, 0.15);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: var(--text-sub);
+            font-size: 15px;
+        }
+
+        .history-val {
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--text-main);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-sub);
+            font-family: 'Akaya Kanadaka', system-ui;
+            font-size: 22px;
+        }
+        
+        .delete-icon-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 22px;
+            line-height: 1;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            font-weight: 300;
+        }
+
+        .delete-icon-btn:hover {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 4px;
+            font-family: 'Akaya Kanadaka', system-ui;
+            font-size: 16px;
+            font-weight: 400;
+            text-transform: lowercase;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn.danger { color: var(--danger); }
+        .action-btn.accent { color: var(--accent); }
+        .action-btn:hover { opacity: 1; }
+
+        .chart-legend {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-sub);
+            justify-content: center;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Scale Vibe</h1>
+    <header>
+        <h1>Observe your weight</h1>
+    </header>
+
     <div class="card">
-        <input type="number" id="weightInput" step="0.1" pattern="\d*" placeholder="00.0" inputmode="decimal">
-        <button onclick="addEntry()">Log Weight</button>
+        <span class="input-header">Log today's number</span>
+        <div class="input-section">
+            <div class="input-group">
+                <input type="number" id="weightInput" step="0.1" pattern="\d*" placeholder="" inputmode="decimal">
+            </div>
+            <button class="primary-btn" onclick="addEntry()">log</button>
+        </div>
         <div id="status"></div>
     </div>
 
+    <!-- Consolidated Trend Card -->
+    <div class="card" id="trendsWrapper">
+        <span class="trend-header">Trend</span>
+        <div class="trends-grid">
+            <div class="trend-stat-box">
+                <span class="stat-label">30 days</span>
+                <span id="stat30d" class="stat-value">--</span>
+            </div>
+            <div class="trend-stat-box">
+                <span class="stat-label">60 days</span>
+                <span id="stat60d" class="stat-value">--</span>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
-        <canvas id="weightChart"></canvas>
+        <div class="chart-header">
+            <span class="chart-title">How it's going</span>
+        </div>
+        <div style="height: 240px; position: relative;">
+            <canvas id="weightChart"></canvas>
+        </div>
+        <div class="chart-legend">
+            <div class="legend-item"><span class="dot" style="background: var(--accent);"></span> 7-day median</div>
+            <div class="legend-item"><span class="dot" style="background: var(--cornsilk); border: 1.5px solid var(--primary);"></span> logged weight</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="chart-header">
+            <span class="chart-title">History</span>
+            <div style="display:flex; gap: 8px;">
+                <button id="seedBtn" class="action-btn accent" onclick="populateExampleData()">seed data</button>
+                <button class="action-btn danger" onclick="clearHistory()" title="Clear All">clear</button>
+            </div>
+        </div>
+        <div id="historyContainer">
+            <!-- Items injected here -->
+        </div>
     </div>
 </div>
 
 <script>
-    const SHEETS_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
-    let weightData = JSON.parse(localStorage.getItem('vibe_weights')) || [];
+    // Paste your Google Web App URL between the quotes below
+    const GOOGLE_SCRIPT_URL = "";
+
+    let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
+    let myChart = null;
+
+    function updateUI() {
+        calculateTrends();
+        renderChart();
+        renderHistory();
+        
+        // Hide seed button if we already have data
+        document.getElementById('seedBtn').style.display = weightData.length > 0 ? 'none' : 'block';
+    }
+
+    function getMedianForRange(weights) {
+        if (weights.length === 0) return null;
+        const sorted = [...weights].sort((a, b) => a - b);
+        const lowMiddle = Math.floor((sorted.length - 1) / 2);
+        const highMiddle = Math.ceil((sorted.length - 1) / 2);
+        return (sorted[lowMiddle] + sorted[highMiddle]) / 2;
+    }
+
+    function calculateTrends() {
+        const trendsWrapper = document.getElementById('trendsWrapper');
+        const stat30d = document.getElementById('stat30d');
+        const stat60d = document.getElementById('stat60d');
+
+        if (weightData.length < 5) {
+            trendsWrapper.style.display = 'none';
+            return;
+        }
+
+        const chrono = [...weightData].reverse();
+        
+        // Latest 7-day median
+        const currentWindow = chrono.slice(-7).map(d => d.weight);
+        const currentMedian = getMedianForRange(currentWindow);
+
+        // Calculate 30d movement
+        const target30 = Math.max(0, chrono.length - 30);
+        const window30 = chrono.slice(Math.max(0, target30 - 6), target30 + 1).map(d => d.weight);
+        const median30 = getMedianForRange(window30);
+        const diff30 = currentMedian - median30;
+
+        stat30d.innerText = (diff30 > 0 ? '+' : '') + diff30.toFixed(1);
+        stat30d.className = 'stat-value ' + (diff30 > 0 ? 'trend-up' : (diff30 < 0 ? 'trend-down' : ''));
+
+        // Calculate 60d movement
+        const target60 = Math.max(0, chrono.length - 60);
+        const window60 = chrono.slice(Math.max(0, target60 - 6), target60 + 1).map(d => d.weight);
+        const median60 = getMedianForRange(window60);
+        const diff60 = currentMedian - median60;
+
+        stat60d.innerText = (diff60 > 0 ? '+' : '') + diff60.toFixed(1);
+        stat60d.className = 'stat-value ' + (diff60 > 0 ? 'trend-up' : (diff60 < 0 ? 'trend-down' : ''));
+
+        trendsWrapper.style.display = 'block';
+    }
+
+    function populateExampleData() {
+        const data = [];
+        const startWeight = 190.0;
+        const now = new Date();
+        
+        for (let i = 60; i >= 0; i--) {
+            const date = new Date(now);
+            date.setDate(now.getDate() - i);
+            const trend = (60 - i) * -0.12; 
+            const noise = (Math.random() - 0.5) * 2.0;
+            const weight = parseFloat((startWeight + trend + noise).toFixed(1));
+            
+            data.push({
+                id: date.getTime() + i,
+                date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                fullDate: date.toISOString(),
+                weight: weight
+            });
+        }
+        
+        weightData = data.reverse();
+        localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+        updateUI();
+    }
 
     async function addEntry() {
         const input = document.getElementById('weightInput');
         const status = document.getElementById('status');
         const val = input.value;
-        if (!val) return;
+
+        if (!val || isNaN(val)) {
+            status.innerText = "Please enter a valid weight";
+            return;
+        }
 
         status.innerText = "Saving...";
         
-        const newEntry = { date: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'}), weight: parseFloat(val) };
-        weightData.push(newEntry);
-        localStorage.setItem('vibe_weights', JSON.stringify(weightData));
+        const timestamp = new Date().toISOString();
+        const displayDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         
-        renderChart();
-        input.value = '';
+        const newEntry = { 
+            id: Date.now(),
+            date: displayDate, 
+            fullDate: timestamp,
+            weight: parseFloat(val) 
+        };
 
-        try {
-            await fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({weight: val}) });
-            status.innerText = "Synced to Cloud ✓";
-            setTimeout(() => status.innerText = "", 3000);
-        } catch (e) {
-            status.innerText = "Saved locally (Offline)";
+        // 1. Save locally
+        weightData.unshift(newEntry);
+        localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+        
+        // 2. Sync to Google Sheets if URL provided
+        if (GOOGLE_SCRIPT_URL) {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                body: JSON.stringify(newEntry)
+            });
         }
+
+        updateUI();
+        input.value = '';
+        input.blur();
+        status.innerText = "Logged";
+        setTimeout(() => { status.innerText = ""; }, 3000);
     }
 
     function renderChart() {
         const ctx = document.getElementById('weightChart').getContext('2d');
-        if (window.myChart) window.myChart.destroy();
-        window.myChart = new Chart(ctx, {
-            type: 'line',
+        const displayData = [...weightData].slice(0, 14).reverse();
+        
+        if (myChart) myChart.destroy();
+        if (displayData.length === 0) return;
+
+        const rollingMedians = displayData.map((_, index) => {
+            const chronologicalWeights = weightData.slice().reverse();
+            const originalIndex = chronologicalWeights.findIndex(item => item.id === displayData[index].id);
+            const start = Math.max(0, originalIndex - 6);
+            const window = chronologicalWeights.slice(start, originalIndex + 1).map(d => d.weight);
+            return getMedianForRange(window);
+        });
+
+        myChart = new Chart(ctx, {
             data: {
-                labels: weightData.slice(-7).map(d => d.date),
-                datasets: [{
-                    label: 'Weight',
-                    data: weightData.slice(-7).map(d => d.weight),
-                    borderColor: '#007AFF',
-                    backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 5
-                }]
+                labels: displayData.map(d => d.date),
+                datasets: [
+                    {
+                        type: 'line',
+                        label: '7-day median',
+                        data: rollingMedians,
+                        borderColor: '#9ba37e',
+                        backgroundColor: 'transparent',
+                        borderWidth: 4,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        order: 1
+                    },
+                    {
+                        type: 'scatter',
+                        label: 'logged weight',
+                        data: displayData.map(d => d.weight),
+                        backgroundColor: '#fefae0',
+                        borderColor: '#d4a373',
+                        borderWidth: 2.5,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        order: 2
+                    }
+                ]
             },
-            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                events: [], 
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(204, 213, 174, 0.2)' },
+                        ticks: { 
+                            color: '#7a7366',
+                            font: { family: 'Urbanist', weight: '700' } 
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            color: '#7a7366',
+                            font: { family: 'Urbanist', weight: '700' } 
+                        }
+                    }
+                }
+            }
         });
     }
-    renderChart();
+
+    function renderHistory() {
+        const container = document.getElementById('historyContainer');
+        if (weightData.length === 0) {
+            container.innerHTML = `<div class="empty-state">No weights logged yet</div>`;
+            return;
+        }
+
+        let html = '<ul class="history-list">';
+        weightData.slice(0, 3).forEach(item => {
+            html += `
+                <li class="history-item">
+                    <span class="history-date">${item.date}</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="history-val">${item.weight}</span>
+                        <button class="delete-icon-btn" onclick="deleteEntry(${item.id})" title="Remove">
+                            &times;
+                        </button>
+                    </div>
+                </li>
+            `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    function deleteEntry(id) {
+        weightData = weightData.filter(item => item.id !== id);
+        localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+        updateUI();
+    }
+
+    function clearHistory() {
+        if (confirm("Delete all data? This cannot be undone.")) {
+            weightData = [];
+            localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+            updateUI();
+        }
+    }
+
+    window.onload = updateUI;
 </script>
 
 </body>
