@@ -246,7 +246,6 @@
         <div class="chart-header">
             <span class="chart-title">History</span>
             <div style="display:flex; gap: 8px;">
-                <button id="seedBtn" class="action-btn accent" onclick="populateExampleData()">seed data</button>
                 <button class="action-btn danger" onclick="clearHistory()" title="Clear All">clear</button>
             </div>
         </div>
@@ -265,7 +264,6 @@
         calculateTrends();
         renderChart();
         renderHistory();
-        document.getElementById('seedBtn').style.display = weightData.length > 0 ? 'none' : 'block';
     }
 
     function getMedianForRange(weights) {
@@ -401,18 +399,6 @@
             localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
             updateUI();
         }
-    }
-
-    function populateExampleData() {
-        const data = [];
-        const now = new Date();
-        for (let i = 60; i >= 0; i--) {
-            const d = new Date(now); d.setDate(now.getDate() - i);
-            data.push({ id: d.getTime() + i, date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), weight: parseFloat((190 - (i * 0.1) + (Math.random() * 2)).toFixed(1)) });
-        }
-        weightData = data.reverse();
-        localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
-        updateUI();
     }
 
     window.onload = updateUI;
