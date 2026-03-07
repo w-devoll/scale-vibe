@@ -40,7 +40,6 @@
 
         body {
             font-family: 'Urbanist', sans-serif;
-            /* Radial Gradient implementation */
             background: radial-gradient(
                 circle at 50% 40%, 
                 var(--fern) 0%, 
@@ -84,7 +83,6 @@
             color: var(--cornsilk);
             text-align: center;
             line-height: 1.1;
-            /* Extra Graphic Block Shadow */
             text-shadow: 
                 1px 1px 0px var(--fern),
                 2px 2px 0px var(--fern),
@@ -97,13 +95,6 @@
                 12px 12px 20px rgba(0,0,0,0.3);
         }
 
-        .input-header {
-            font-size: 26px;
-            color: var(--text-main);
-            margin-bottom: 16px;
-            display: block;
-        }
-
         .card {
             background: var(--card);
             padding: 24px;
@@ -114,17 +105,14 @@
             backdrop-filter: blur(5px);
         }
 
-        /* Trends Combined Component */
-        #trendsWrapper {
-            display: none;
-        }
-
-        .trend-header {
+        .input-header, .trend-header {
             font-size: 26px;
             color: var(--text-main);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: block;
         }
+
+        #trendsWrapper { display: none; }
 
         .trends-grid {
             display: grid;
@@ -142,39 +130,12 @@
             border-radius: 20px;
         }
 
-        .stat-label {
-            font-size: 18px;
-            color: var(--text-sub);
-            margin-bottom: 4px;
-        }
-
-        .stat-value {
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--text-main);
-        }
-
+        .stat-label { font-size: 18px; color: var(--text-sub); margin-bottom: 4px; }
+        .stat-value { font-size: 26px; font-weight: 900; color: var(--text-main); }
         .trend-up { color: var(--danger); }
         .trend-down { color: var(--success); }
 
-        .input-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .input-group {
-            position: relative;
-            width: 100%;
-        }
-
-        /* Removing Spinners */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+        .input-section { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 
         input[type=number] {
             -moz-appearance: textfield;
@@ -190,14 +151,9 @@
             transition: all 0.2s ease;
             color: var(--text-main);
             background: rgba(254, 250, 224, 0.6);
-            margin: 0;
         }
 
-        input:focus {
-            border-color: var(--primary);
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.15);
-        }
+        input:focus { border-color: var(--primary); background: #fff; }
 
         button.primary-btn {
             font-family: 'Urbanist', sans-serif;
@@ -210,113 +166,23 @@
             font-size: 18px;
             font-weight: 800;
             cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            text-transform: lowercase;
             box-shadow: 0 4px 12px rgba(212, 163, 115, 0.3);
-            letter-spacing: 0.5px;
-            text-transform: lowercase;
         }
 
-        button.primary-btn:active {
-            transform: scale(0.97);
-            background: var(--primary-dark);
-        }
+        #status { font-size: 16px; color: var(--text-sub); text-align: center; margin-top: 12px; height: 18px; font-family: 'Akaya Kanadaka', system-ui; }
 
-        #status {
-            font-size: 16px;
-            color: var(--text-sub);
-            text-align: center;
-            margin-top: 12px;
-            height: 18px;
-            font-family: 'Akaya Kanadaka', system-ui;
-        }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .chart-title { font-size: 24px; color: var(--text-main); }
 
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .chart-title {
-            font-size: 24px;
-            color: var(--text-main);
-        }
-
-        .history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid rgba(212, 163, 115, 0.15);
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
-        }
-
-        .history-date {
-            font-weight: 600;
-            color: var(--text-sub);
-            font-size: 15px;
-        }
-
-        .history-val {
-            font-weight: 800;
-            font-size: 18px;
-            color: var(--text-main);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-sub);
-            font-family: 'Akaya Kanadaka', system-ui;
-            font-size: 22px;
-        }
+        .history-list { list-style: none; padding: 0; margin: 0; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(212, 163, 115, 0.15); }
+        .history-item:last-child { border-bottom: none; }
+        .history-date { font-weight: 600; color: var(--text-sub); font-size: 15px; }
+        .history-val { font-weight: 800; font-size: 18px; color: var(--text-main); }
         
-        .delete-icon-btn {
-            background: none;
-            border: none;
-            color: var(--danger);
-            cursor: pointer;
-            padding: 4px 8px;
-            font-size: 22px;
-            line-height: 1;
-            opacity: 0.6;
-            transition: opacity 0.2s;
-            font-weight: 300;
-        }
-
-        .delete-icon-btn:hover {
-            opacity: 1;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            color: var(--text-sub);
-            cursor: pointer;
-            padding: 4px;
-            font-family: 'Akaya Kanadaka', system-ui;
-            font-size: 16px;
-            font-weight: 400;
-            text-transform: lowercase;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .action-btn.danger { color: var(--danger); }
-        .action-btn.accent { color: var(--accent); }
-        .action-btn:hover { opacity: 1; }
+        .delete-icon-btn { background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px; font-size: 22px; opacity: 0.6; }
+        .action-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; padding: 4px; font-family: 'Akaya Kanadaka', system-ui; font-size: 16px; }
 
         .chart-legend {
             display: flex;
@@ -341,7 +207,7 @@
     <div class="card">
         <span class="input-header">Log today's number</span>
         <div class="input-section">
-            <div class="input-group">
+            <div class="input-group" style="width: 100%;">
                 <input type="number" id="weightInput" step="0.1" pattern="\d*" placeholder="" inputmode="decimal">
             </div>
             <button class="primary-btn" onclick="addEntry()">log</button>
@@ -349,7 +215,6 @@
         <div id="status"></div>
     </div>
 
-    <!-- Consolidated Trend Card -->
     <div class="card" id="trendsWrapper">
         <span class="trend-header">Trend</span>
         <div class="trends-grid">
@@ -385,9 +250,7 @@
                 <button class="action-btn danger" onclick="clearHistory()" title="Clear All">clear</button>
             </div>
         </div>
-        <div id="historyContainer">
-            <!-- Items injected here -->
-        </div>
+        <div id="historyContainer"></div>
     </div>
 </div>
 
@@ -402,8 +265,6 @@
         calculateTrends();
         renderChart();
         renderHistory();
-        
-        // Hide seed button if we already have data
         document.getElementById('seedBtn').style.display = weightData.length > 0 ? 'none' : 'block';
     }
 
@@ -426,55 +287,22 @@
         }
 
         const chrono = [...weightData].reverse();
-        
-        // Latest 7-day median
         const currentWindow = chrono.slice(-7).map(d => d.weight);
         const currentMedian = getMedianForRange(currentWindow);
 
-        // Calculate 30d movement
         const target30 = Math.max(0, chrono.length - 30);
         const window30 = chrono.slice(Math.max(0, target30 - 6), target30 + 1).map(d => d.weight);
-        const median30 = getMedianForRange(window30);
-        const diff30 = currentMedian - median30;
-
+        const diff30 = currentMedian - getMedianForRange(window30);
         stat30d.innerText = (diff30 > 0 ? '+' : '') + diff30.toFixed(1);
         stat30d.className = 'stat-value ' + (diff30 > 0 ? 'trend-up' : (diff30 < 0 ? 'trend-down' : ''));
 
-        // Calculate 60d movement
         const target60 = Math.max(0, chrono.length - 60);
         const window60 = chrono.slice(Math.max(0, target60 - 6), target60 + 1).map(d => d.weight);
-        const median60 = getMedianForRange(window60);
-        const diff60 = currentMedian - median60;
-
+        const diff60 = currentMedian - getMedianForRange(window60);
         stat60d.innerText = (diff60 > 0 ? '+' : '') + diff60.toFixed(1);
         stat60d.className = 'stat-value ' + (diff60 > 0 ? 'trend-up' : (diff60 < 0 ? 'trend-down' : ''));
 
         trendsWrapper.style.display = 'block';
-    }
-
-    function populateExampleData() {
-        const data = [];
-        const startWeight = 190.0;
-        const now = new Date();
-        
-        for (let i = 60; i >= 0; i--) {
-            const date = new Date(now);
-            date.setDate(now.getDate() - i);
-            const trend = (60 - i) * -0.12; 
-            const noise = (Math.random() - 0.5) * 2.0;
-            const weight = parseFloat((startWeight + trend + noise).toFixed(1));
-            
-            data.push({
-                id: date.getTime() + i,
-                date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                fullDate: date.toISOString(),
-                weight: weight
-            });
-        }
-        
-        weightData = data.reverse();
-        localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
-        updateUI();
     }
 
     async function addEntry() {
@@ -488,7 +316,6 @@
         }
 
         status.innerText = "Saving...";
-        
         const timestamp = new Date().toISOString();
         const displayDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         
@@ -499,16 +326,13 @@
             weight: parseFloat(val) 
         };
 
-        // 1. Save locally
         weightData.unshift(newEntry);
         localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
         
-        // 2. Sync to Google Sheets if URL provided
         if (GOOGLE_SCRIPT_URL) {
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                cache: 'no-cache',
                 body: JSON.stringify(newEntry)
             });
         }
@@ -523,15 +347,13 @@
     function renderChart() {
         const ctx = document.getElementById('weightChart').getContext('2d');
         const displayData = [...weightData].slice(0, 14).reverse();
-        
         if (myChart) myChart.destroy();
         if (displayData.length === 0) return;
 
         const rollingMedians = displayData.map((_, index) => {
-            const chronologicalWeights = weightData.slice().reverse();
-            const originalIndex = chronologicalWeights.findIndex(item => item.id === displayData[index].id);
-            const start = Math.max(0, originalIndex - 6);
-            const window = chronologicalWeights.slice(start, originalIndex + 1).map(d => d.weight);
+            const chrono = weightData.slice().reverse();
+            const originalIndex = chrono.findIndex(item => item.id === displayData[index].id);
+            const window = chrono.slice(Math.max(0, originalIndex - 6), originalIndex + 1).map(d => d.weight);
             return getMedianForRange(window);
         });
 
@@ -539,54 +361,16 @@
             data: {
                 labels: displayData.map(d => d.date),
                 datasets: [
-                    {
-                        type: 'line',
-                        label: '7-day median',
-                        data: rollingMedians,
-                        borderColor: '#9ba37e',
-                        backgroundColor: 'transparent',
-                        borderWidth: 4,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        order: 1
-                    },
-                    {
-                        type: 'scatter',
-                        label: 'logged weight',
-                        data: displayData.map(d => d.weight),
-                        backgroundColor: '#fefae0',
-                        borderColor: '#d4a373',
-                        borderWidth: 2.5,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        order: 2
-                    }
+                    { type: 'line', label: 'Median', data: rollingMedians, borderColor: '#9ba37e', backgroundColor: 'transparent', borderWidth: 4, tension: 0.4, pointRadius: 0 },
+                    { type: 'scatter', label: 'Weight', data: displayData.map(d => d.weight), backgroundColor: '#fefae0', borderColor: '#d4a373', borderWidth: 2.5, pointRadius: 6 }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                events: [], 
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: false }
-                },
+                responsive: true, maintainAspectRatio: false, events: [],
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
                 scales: {
-                    y: {
-                        beginAtZero: false,
-                        grid: { color: 'rgba(204, 213, 174, 0.2)' },
-                        ticks: { 
-                            color: '#7a7366',
-                            font: { family: 'Urbanist', weight: '700' } 
-                        }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { 
-                            color: '#7a7366',
-                            font: { family: 'Urbanist', weight: '700' } 
-                        }
-                    }
+                    y: { grid: { color: 'rgba(204, 213, 174, 0.2)' }, ticks: { color: '#7a7366', font: { family: 'Urbanist', weight: '700' } } },
+                    x: { grid: { display: false }, ticks: { color: '#7a7366', font: { family: 'Urbanist', weight: '700' } } }
                 }
             }
         });
@@ -598,23 +382,11 @@
             container.innerHTML = `<div class="empty-state">No weights logged yet</div>`;
             return;
         }
-
         let html = '<ul class="history-list">';
         weightData.slice(0, 3).forEach(item => {
-            html += `
-                <li class="history-item">
-                    <span class="history-date">${item.date}</span>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="history-val">${item.weight}</span>
-                        <button class="delete-icon-btn" onclick="deleteEntry(${item.id})" title="Remove">
-                            &times;
-                        </button>
-                    </div>
-                </li>
-            `;
+            html += `<li class="history-item"><span class="history-date">${item.date}</span><div style="display:flex; align-items:center; gap:8px;"><span class="history-val">${item.weight}</span><button class="delete-icon-btn" onclick="deleteEntry(${item.id})">&times;</button></div></li>`;
         });
-        html += '</ul>';
-        container.innerHTML = html;
+        container.innerHTML = html + '</ul>';
     }
 
     function deleteEntry(id) {
@@ -624,15 +396,26 @@
     }
 
     function clearHistory() {
-        if (confirm("Delete all data? This cannot be undone.")) {
+        if (confirm("Delete all data?")) {
             weightData = [];
             localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
             updateUI();
         }
     }
 
+    function populateExampleData() {
+        const data = [];
+        const now = new Date();
+        for (let i = 60; i >= 0; i--) {
+            const d = new Date(now); d.setDate(now.getDate() - i);
+            data.push({ id: d.getTime() + i, date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), weight: parseFloat((190 - (i * 0.1) + (Math.random() * 2)).toFixed(1)) });
+        }
+        weightData = data.reverse();
+        localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+        updateUI();
+    }
+
     window.onload = updateUI;
 </script>
-
 </body>
 </html>
