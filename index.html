@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Scale Vibe | Weight Tracker</title>
     
-    <!-- Favicon (Encoded SVG for better browser support) -->
+    <!-- Favicon (Encoded SVG) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23344e41'/%3E%3Ctext y='72' x='50' font-size='70' text-anchor='middle' font-family='serif' fill='%23fefae0'%3EO%3C/text%3E%3C/svg%3E">
     
-    <!-- Mobile App Icon (For Add to Home Screen) -->
+    <!-- Mobile App Icon -->
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23344e41'/%3E%3Ctext y='72' x='50' font-size='70' text-anchor='middle' font-family='serif' fill='%23fefae0'%3EO%3C/text%3E%3C/svg%3E">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -57,7 +57,41 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .container { width: 100%; max-width: 440px; }
+        /* Security Overlay */
+        #lockScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--forest-deep);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .pin-container {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            color: var(--cornsilk);
+        }
+
+        #pinInput {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--moss);
+            border-radius: 12px;
+            color: white;
+            font-size: 32px;
+            text-align: center;
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            letter-spacing: 10px;
+            -webkit-text-security: disc; /* Hide PIN as dots */
+        }
+
+        .container { width: 100%; max-width: 440px; display: none; } /* Hidden by default */
 
         header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; padding: 10px 4px; }
 
@@ -142,7 +176,18 @@
 </head>
 <body>
 
-<div class="container">
+<!-- Lock Screen Overlay -->
+<div id="lockScreen">
+    <div class="pin-container">
+        <h1 style="font-size: 32px; text-shadow: none; margin-bottom: 10px;">Scale Vibe</h1>
+        <p style="font-family: 'Akaya Kanadaka'; font-size: 18px; opacity: 0.8;">Enter PIN to unlock</p>
+        <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••">
+        <button class="primary-btn" onclick="checkPin()" style="width: 100%; margin-top: 10px;">unlock</button>
+        <div id="pinError" style="color: var(--danger); margin-top: 15px; font-family: 'Akaya Kanadaka'; min-height: 20px;"></div>
+    </div>
+</div>
+
+<div class="container" id="mainApp">
     <header>
         <h1>Observe your weight</h1>
     </header>
@@ -198,17 +243,38 @@
 
 <script>
     /**
-     * URL OBFUSCATION:
-     * To prevent bots from finding your Google Script URL in a public repo:
-     * 1. Go to your browser console (F12)
-     * 2. Type: btoa("YOUR_GOOGLE_SCRIPT_URL")
-     * 3. Copy the resulting encoded string and paste it into ENCODED_URL below.
+     * SECURITY & URL SETTINGS:
      */
+    const APP_PIN = "8765";
     const ENCODED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5MGgtVjBiRFo1TnFyd1dWd0QtQm9XdVNUdk0wMngwSWdfMkVBaHQ5aXp5NVhORjdXdmNIbmo1NVZCY0YzVUxnbUR6QS9leGVj"; 
     const GOOGLE_SCRIPT_URL = ENCODED_URL ? atob(ENCODED_URL) : "";
 
     let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
     let myChart = null;
+
+    // PIN Check Logic
+    function checkPin() {
+        const input = document.getElementById('pinInput');
+        const error = document.getElementById('pinError');
+        if (input.value === APP_PIN) {
+            document.getElementById('lockScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                updateUI();
+            }, 300);
+        } else {
+            error.innerText = "Incorrect PIN";
+            input.value = "";
+            input.focus();
+            setTimeout(() => { error.innerText = ""; }, 2000);
+        }
+    }
+
+    // Allow Enter key for PIN
+    document.getElementById('pinInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkPin();
+    });
 
     function updateUI() {
         calculateTrends();
@@ -350,8 +416,6 @@
             updateUI();
         }
     }
-
-    window.onload = updateUI;
 </script>
 </body>
 </html>
