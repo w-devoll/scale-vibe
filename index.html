@@ -246,9 +246,12 @@
 <script>
     /**
      * SECURITY & URL SETTINGS:
+     * 1. Get your Google Web App URL.
+     * 2. Go to https://www.base64encode.org/ and encode it.
+     * 3. Paste that encoded string into ENCODED_URL below.
      */
     const APP_PIN = "8765";
-    const ENCODED_URL = ""; 
+    const ENCODED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5MGgtVjBiRFo1TnFyd1dWd0QtQm9XdVNUdk0wMngwSWdfMkVBaHQ5aXp5NVhORjdXdmNIbmo1NVZCY0YzVUxnbUR6QS9leGVj";
     const GOOGLE_SCRIPT_URL = ENCODED_URL ? atob(ENCODED_URL) : "";
 
     let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
