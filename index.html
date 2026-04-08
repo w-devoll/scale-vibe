@@ -197,7 +197,15 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = ""; // Paste your Web App URL here
+    /**
+     * URL OBFUSCATION:
+     * To prevent bots from finding your Google Script URL in a public repo:
+     * 1. Go to your browser console (F12)
+     * 2. Type: btoa("YOUR_GOOGLE_SCRIPT_URL")
+     * 3. Copy the resulting encoded string and paste it into ENCODED_URL below.
+     */
+    const ENCODED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5MGgtVjBiRFo1TnFyd1dWd0QtQm9XdVNUdk0wMngwSWdfMkVBaHQ5aXp5NVhORjdXdmNIbmo1NVZCY0YzVUxnbUR6QS9leGVj"; 
+    const GOOGLE_SCRIPT_URL = ENCODED_URL ? atob(ENCODED_URL) : "";
 
     let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
     let myChart = null;
