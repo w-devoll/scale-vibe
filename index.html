@@ -165,6 +165,7 @@
         
         .delete-icon-btn { background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px; font-size: 22px; opacity: 0.6; }
         .action-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; padding: 4px; font-family: 'Akaya Kanadaka', system-ui; font-size: 16px; }
+        .action-btn.success { color: var(--success); }
 
         .chart-legend {
             display: flex; gap: 12px; margin-top: 14px; font-size: 13px; font-weight: 700;
@@ -233,7 +234,8 @@
     <div class="card">
         <div class="chart-header">
             <span class="chart-title">History</span>
-            <div style="display:flex; gap: 8px;">
+            <div style="display:flex; gap: 12px;">
+                <button class="action-btn success" id="syncBtn" onclick="syncFromCloud()">sync</button>
                 <button class="action-btn danger" onclick="clearHistory()" title="Clear All">clear</button>
             </div>
         </div>
@@ -246,7 +248,7 @@
      * SECURITY & URL SETTINGS:
      */
     const APP_PIN = "8765";
-    const ENCODED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5MGgtVjBiRFo1TnFyd1dWd0QtQm9XdVNUdk0wMngwSWdfMkVBaHQ5aXp5NVhORjdXdmNIbmo1NVZCY0YzVUxnbUR6QS9leGVj"; 
+    const ENCODED_URL = ""; 
     const GOOGLE_SCRIPT_URL = ENCODED_URL ? atob(ENCODED_URL) : "";
 
     let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
@@ -356,6 +358,55 @@
         input.blur();
         status.innerText = "Logged";
         setTimeout(() => { status.innerText = ""; }, 3000);
+    }
+
+    /**
+     * SYNC FROM CLOUD: 
+     * Requires update to Google Apps Script to handle GET requests
+     */
+    async function syncFromCloud() {
+        if (!GOOGLE_SCRIPT_URL) {
+            alert("No Sync URL configured. Check your code.");
+            return;
+        }
+
+        const btn = document.getElementById('syncBtn');
+        const status = document.getElementById('status');
+        const originalText = btn.innerText;
+        
+        btn.innerText = "...";
+        btn.disabled = true;
+        status.innerText = "Fetching data...";
+
+        try {
+            // Apps Script requires a GET request to return data
+            const response = await fetch(GOOGLE_SCRIPT_URL);
+            const data = await response.json();
+
+            if (data && Array.isArray(data)) {
+                // Merge data (prevent duplicates based on ID or FullDate)
+                const existingDates = new Set(weightData.map(d => d.fullDate));
+                const newItems = data.filter(item => !existingDates.has(item.fullDate));
+                
+                if (newItems.length > 0) {
+                    weightData = [...newItems, ...weightData];
+                    // Sort descending by date
+                    weightData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+                    localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+                    updateUI();
+                    status.innerText = `Imported ${newItems.length} entries`;
+                } else {
+                    status.innerText = "Already up to date";
+                }
+            }
+        } catch (e) {
+            console.error("Sync failed", e);
+            status.innerText = "Sync failed. Check script settings.";
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+            setTimeout(() => { status.innerText = ""; }, 3000);
+        }
     }
 
     function renderChart() {
