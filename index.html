@@ -4,17 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Scale Vibe | Weight Tracker</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23344e41%22/><text y=%22.9em%22 x=%2250%25%22 font-size=%2280%22 text-anchor=%22middle%22 font-family=%22Akaya Kanadaka, system-ui%22 fill=%22%23fefae0%22>O</text></svg>">
-    <!-- Fonts: Akaya Kanadaka for all headers, Urbanist for body -->
+    
+    <!-- Favicon (Encoded SVG for better browser support) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23344e41'/%3E%3Ctext y='72' x='50' font-size='70' text-anchor='middle' font-family='serif' fill='%23fefae0'%3EO%3C/text%3E%3C/svg%3E">
+    
+    <!-- Mobile App Icon (For Add to Home Screen) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23344e41'/%3E%3Ctext y='72' x='50' font-size='70' text-anchor='middle' font-family='serif' fill='%23fefae0'%3EO%3C/text%3E%3C/svg%3E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <!-- Chart.js for the visualization -->
+    
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         :root {
-            /* Palette */
             --forest-deep: #344e41;
             --fern: #588157;
             --moss: #a3b18a;
@@ -24,9 +32,7 @@
             --papaya-whip: #faedcdff;
             --light-bronze: #d4a373ff;
             
-            /* Functional Mapping */
             --primary: var(--light-bronze);
-            --primary-dark: #bc8a5f;
             --card: var(--papaya-whip);
             --text-main: #4a4439;
             --text-sub: #7a7366;
@@ -35,20 +41,11 @@
             --success: #588157;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Urbanist', sans-serif;
-            background: radial-gradient(
-                circle at 50% 40%, 
-                var(--fern) 0%, 
-                #436742 40%,
-                var(--forest-deep) 85%,
-                #283b31 100%
-            );
+            background: radial-gradient(circle at 50% 40%, var(--fern) 0%, #436742 40%, var(--forest-deep) 85%, #283b31 100%);
             background-attachment: fixed;
             color: var(--text-main);
             margin: 0;
@@ -60,18 +57,9 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .container {
-            width: 100%;
-            max-width: 440px;
-        }
+        .container { width: 100%; max-width: 440px; }
 
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px; 
-            padding: 10px 4px;
-        }
+        header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; padding: 10px 4px; }
 
         h1, .chart-title, .input-header, .stat-label, .trend-header {
             font-family: 'Akaya Kanadaka', system-ui;
@@ -85,16 +73,7 @@
             color: var(--cornsilk);
             text-align: center;
             line-height: 1.1;
-            text-shadow: 
-                1px 1px 0px var(--fern),
-                2px 2px 0px var(--fern),
-                3px 3px 0px var(--fern),
-                4px 4px 0px var(--forest-deep),
-                5px 5px 0px var(--forest-deep),
-                6px 6px 0px var(--forest-deep),
-                7px 7px 0px var(--forest-deep),
-                8px 8px 0px rgba(0,0,0,0.5),
-                12px 12px 20px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 0px var(--fern), 2px 2px 0px var(--fern), 4px 4px 0px var(--forest-deep), 8px 8px 20px rgba(0,0,0,0.3);
         }
 
         .card {
@@ -107,29 +86,13 @@
             backdrop-filter: blur(5px);
         }
 
-        .input-header, .trend-header {
-            font-size: 26px;
-            color: var(--text-main);
-            margin-bottom: 16px;
-            display: block;
-        }
-
+        .input-header, .trend-header { font-size: 26px; color: var(--text-main); margin-bottom: 16px; display: block; }
         #trendsWrapper { display: none; }
-
-        .trends-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
+        .trends-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
         .trend-stat-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 10px;
-            background: rgba(212, 163, 115, 0.08);
-            border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 10px; background: rgba(212, 163, 115, 0.08); border-radius: 20px;
         }
 
         .stat-label { font-size: 18px; color: var(--text-sub); margin-bottom: 4px; }
@@ -140,36 +103,19 @@
         .input-section { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 
         input[type=number] {
-            -moz-appearance: textfield;
             font-family: 'Urbanist', sans-serif;
-            width: 100%;
-            padding: 18px;
-            border: 2px solid var(--beige);
-            border-radius: 18px;
-            font-size: 26px;
-            font-weight: 700;
-            text-align: center;
-            outline: none;
-            transition: all 0.2s ease;
-            color: var(--text-main);
-            background: rgba(254, 250, 224, 0.6);
+            width: 100%; padding: 18px; border: 2px solid var(--beige); border-radius: 18px;
+            font-size: 26px; font-weight: 700; text-align: center; outline: none;
+            color: var(--text-main); background: rgba(254, 250, 224, 0.6);
         }
 
         input:focus { border-color: var(--primary); background: #fff; }
 
         button.primary-btn {
             font-family: 'Urbanist', sans-serif;
-            width: 140px; 
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 18px;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: lowercase;
-            box-shadow: 0 4px 12px rgba(212, 163, 115, 0.3);
+            width: 140px; padding: 12px; background: var(--primary); color: white;
+            border: none; border-radius: 16px; font-size: 18px; font-weight: 800;
+            cursor: pointer; text-transform: lowercase; box-shadow: 0 4px 12px rgba(212, 163, 115, 0.3);
         }
 
         #status { font-size: 16px; color: var(--text-sub); text-align: center; margin-top: 12px; height: 18px; font-family: 'Akaya Kanadaka', system-ui; }
@@ -187,13 +133,8 @@
         .action-btn { background: none; border: none; color: var(--text-sub); cursor: pointer; padding: 4px; font-family: 'Akaya Kanadaka', system-ui; font-size: 16px; }
 
         .chart-legend {
-            display: flex;
-            gap: 12px;
-            margin-top: 14px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-sub);
-            justify-content: center;
+            display: flex; gap: 12px; margin-top: 14px; font-size: 13px; font-weight: 700;
+            color: var(--text-sub); justify-content: center;
         }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -210,7 +151,7 @@
         <span class="input-header">Log today's number</span>
         <div class="input-section">
             <div class="input-group" style="width: 100%;">
-                <input type="number" id="weightInput" step="0.1" pattern="\d*" placeholder="" inputmode="decimal">
+                <input type="number" id="weightInput" step="0.1" pattern="\d*" placeholder="00.0" inputmode="decimal">
             </div>
             <button class="primary-btn" onclick="addEntry()">log</button>
         </div>
@@ -256,8 +197,7 @@
 </div>
 
 <script>
-    // Paste your Google Web App URL between the quotes below
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0h-V0bDZ5NqrwWVwD-BoWuSTvM02x0Ig_2EAht9izy5XNF7WvcHnj55VBcF3ULgmDzA/exec";
+    const GOOGLE_SCRIPT_URL = ""; // Paste your Web App URL here
 
     let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
     let myChart = null;
@@ -334,7 +274,7 @@
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(newEntry)
-            });
+            }).catch(e => console.error("Sync failed:", e));
         }
 
         updateUI();
@@ -366,8 +306,8 @@
                 ]
             },
             options: {
-                responsive: true, maintainAspectRatio: false, events: [],
-                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
                     y: { grid: { color: 'rgba(204, 213, 174, 0.2)' }, ticks: { color: '#7a7366', font: { family: 'Urbanist', weight: '700' } } },
                     x: { grid: { display: false }, ticks: { color: '#7a7366', font: { family: 'Urbanist', weight: '700' } } }
@@ -379,11 +319,11 @@
     function renderHistory() {
         const container = document.getElementById('historyContainer');
         if (weightData.length === 0) {
-            container.innerHTML = `<div class="empty-state">No weights logged yet</div>`;
+            container.innerHTML = `<div style="text-align:center; padding: 20px; color:var(--text-sub); font-size:14px;">No weights logged yet</div>`;
             return;
         }
         let html = '<ul class="history-list">';
-        weightData.slice(0, 3).forEach(item => {
+        weightData.slice(0, 5).forEach(item => {
             html += `<li class="history-item"><span class="history-date">${item.date}</span><div style="display:flex; align-items:center; gap:8px;"><span class="history-val">${item.weight}</span><button class="delete-icon-btn" onclick="deleteEntry(${item.id})">&times;</button></div></li>`;
         });
         container.innerHTML = html + '</ul>';
