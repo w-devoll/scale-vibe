@@ -230,7 +230,7 @@
 
     <div class="card">
         <div class="chart-header">
-            <span class="chart-title">How it's going</span>
+            <span class="chart-title">Last 30 Days</span>
         </div>
         <div style="height: 240px; position: relative;">
             <canvas id="weightChart"></canvas>
@@ -336,7 +336,6 @@
 
         status.innerText = "Saving...";
         const now = new Date();
-        // Send simplified Date string (Column A) and Weight (Column B)
         const dateStr = now.toLocaleDateString(); 
         
         const newEntry = { 
@@ -350,7 +349,6 @@
         localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
         
         if (GOOGLE_SCRIPT_URL) {
-            // Updated to simple 2-column object/array format
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -393,19 +391,16 @@
                 let weight = null;
                 let dateObj = null;
 
-                // Robust 2-column extraction: find the first date and the first valid weight
                 const cells = Array.isArray(row) ? row : Object.values(row);
                 
                 cells.forEach(cell => {
                     if (cell === "" || cell === null) return;
                     
-                    // Try parsing as number (Weight)
                     const clean = String(cell).replace(/[a-zA-Z\s,]/g, '');
                     const num = parseFloat(clean);
                     if (weight === null && !isNaN(num) && num > MIN_WEIGHT && num < MAX_WEIGHT) {
                         weight = num;
                     } 
-                    // Try parsing as date
                     else if (dateObj === null) {
                         const d = new Date(cell);
                         if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
@@ -427,7 +422,6 @@
             if (cloudEntries.length === 0) {
                 status.innerText = "No valid entries";
             } else {
-                // Merge while avoiding duplicates (same day + same weight)
                 const merged = [...weightData];
                 cloudEntries.forEach(c => {
                     const day = c.fullDate.split('T')[0];
@@ -452,7 +446,8 @@
 
     function renderChart() {
         const ctx = document.getElementById('weightChart').getContext('2d');
-        const displayData = [...weightData].slice(0, 14).reverse();
+        // Changed from slice(0, 14) to slice(0, 30) for default 30-day view
+        const displayData = [...weightData].slice(0, 30).reverse();
         if (myChart) myChart.destroy();
         if (!displayData.length) return;
 
@@ -468,7 +463,7 @@
                 labels: displayData.map(d => d.date),
                 datasets: [
                     { type: 'line', data: rollingMedians, borderColor: '#9ba37e', backgroundColor: 'transparent', borderWidth: 4, tension: 0.4, pointRadius: 0 },
-                    { type: 'scatter', data: displayData.map(d => d.weight), backgroundColor: '#fefae0', borderColor: '#d4a373', borderWidth: 2.5, pointRadius: 6 }
+                    { type: 'scatter', data: displayData.map(d => d.weight), backgroundColor: '#fefae0', borderColor: '#d4a373', borderWidth: 2.5, pointRadius: 4 }
                 ]
             },
             options: {
@@ -476,7 +471,17 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     y: { grid: { color: 'rgba(204, 213, 174, 0.15)' }, ticks: { color: '#7a7366', font: { family: 'Urbanist', weight: '700' } } },
-                    x: { grid: { display: false }, ticks: { color: '#7a7366', font: { family: 'Urbanist', weight: '700' } } }
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { 
+                            color: '#7a7366', 
+                            font: { family: 'Urbanist', weight: '700' },
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 10 // Reduces density of labels for better readability
+                        } 
+                    }
                 }
             }
         });
