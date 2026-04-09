@@ -43,17 +43,25 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
         body {
             font-family: 'Urbanist', sans-serif;
             background: radial-gradient(circle at 50% 40%, var(--fern) 0%, #436742 40%, var(--forest-deep) 85%, #283b31 100%);
             background-attachment: fixed;
+            background-size: cover;
             color: var(--text-main);
-            margin: 0;
-            padding: 20px 16px;
             display: flex;
-            flex-direction: column; align-items: center;
+            flex-direction: column; 
+            align-items: center;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
         /* Security Overlay */
@@ -90,7 +98,12 @@
             -webkit-text-security: disc;
         }
 
-        .container { width: 100%; max-width: 440px; display: none; }
+        .container { 
+            width: 100%; 
+            max-width: 440px; 
+            display: none; 
+            padding: 20px 16px; 
+        }
 
         header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; padding: 10px 4px; }
 
@@ -326,8 +339,9 @@
         }
 
         status.innerText = "Saving...";
-        const timestamp = new Date().toISOString();
-        const displayDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const now = new Date();
+        const timestamp = now.toISOString();
+        const displayDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         
         const newEntry = { 
             id: Date.now(),
@@ -344,7 +358,7 @@
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(newEntry)
-            }).catch(e => console.error("Sync failed:", e));
+            }).catch(e => console.error("Post sync failed:", e));
         }
 
         updateUI();
@@ -356,7 +370,7 @@
 
     async function syncFromCloud() {
         if (!GOOGLE_SCRIPT_URL) {
-            alert("No Sync URL configured. Check your code.");
+            console.error("No Sync URL configured");
             return;
         }
 
@@ -370,55 +384,57 @@
 
         try {
             const response = await fetch(GOOGLE_SCRIPT_URL);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
             const rawData = await response.json();
+            if (!Array.isArray(rawData)) throw new Error('Data is not an array');
 
-            if (rawData && Array.isArray(rawData)) {
-                const formattedData = rawData.map(item => {
-                    // Logic for [FullTimestamp (A), ShortDate (B), Weight (C)]
-                    if (Array.isArray(item) && item.length >= 3) {
-                        const rawTimestamp = item[0];
-                        const shortDate = item[1];
-                        const weight = parseFloat(item[2]);
-
-                        // More robust date parsing for Google Sheets strings
-                        let d = new Date(rawTimestamp);
-                        // If it's the standard GSheets "3/7/2026 7:48:17" it might need help
-                        if (isNaN(d.getTime()) && typeof rawTimestamp === 'string') {
-                            // Try to parse common GSheets formats manually or via replacements
-                            d = new Date(rawTimestamp.replace(/-/g, '/'));
+            const cloudEntries = [];
+            
+            rawData.forEach(row => {
+                // Expecting row as [FullTimestamp (A), ShortDate (B), Weight (C)]
+                if (Array.isArray(row) && row.length >= 3) {
+                    const weightVal = parseFloat(row[2]);
+                    if (!isNaN(weightVal)) {
+                        let d = new Date(row[0]);
+                        // Fix for common GSheets date string quirks
+                        if (isNaN(d.getTime()) && typeof row[0] === 'string') {
+                            d = new Date(row[0].replace(/-/g, '/'));
                         }
 
-                        return {
-                            fullDate: !isNaN(d.getTime()) ? d.toISOString() : rawTimestamp,
-                            date: shortDate,
-                            weight: weight,
-                            id: !isNaN(d.getTime()) ? d.getTime() : Date.now()
-                        };
+                        if (!isNaN(d.getTime())) {
+                            cloudEntries.push({
+                                fullDate: d.toISOString(),
+                                date: row[1] || d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                                weight: weightVal,
+                                id: d.getTime()
+                            });
+                        }
                     }
-                    return item; 
-                }).filter(item => item && !isNaN(item.weight) && item.fullDate);
+                }
+            });
 
-                // Use a map to handle duplicates, keeping the newest local or cloud data
-                const mergedMap = new Map();
-                // Add existing local data first
-                weightData.forEach(d => mergedMap.set(d.fullDate, d));
-                // Overwrite/Add cloud data
-                formattedData.forEach(d => mergedMap.set(d.fullDate, d));
-                
-                weightData = Array.from(mergedMap.values());
-                weightData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
-                
-                localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
-                updateUI();
-                status.innerText = "Sync complete";
-            }
+            // Merge using fullDate as unique key
+            const mergedMap = new Map();
+            // Start with current local data
+            weightData.forEach(item => mergedMap.set(item.fullDate, item));
+            // Add/Overwrite with cloud data
+            cloudEntries.forEach(item => mergedMap.set(item.fullDate, item));
+            
+            weightData = Array.from(mergedMap.values());
+            // Sort newest to oldest
+            weightData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+            
+            localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+            updateUI();
+            status.innerText = "Sync complete";
         } catch (e) {
-            console.error("Sync failed", e);
+            console.error("Sync process error:", e);
             status.innerText = "Sync failed. Check connection.";
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
-            setTimeout(() => { status.innerText = ""; }, 3000);
+            setTimeout(() => { if (status.innerText !== "Logged") status.innerText = ""; }, 3000);
         }
     }
 
