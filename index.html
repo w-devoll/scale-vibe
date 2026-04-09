@@ -18,7 +18,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Scale Vibe">
     
-    <title>Weights</title>
+    <title>Scale Vibe | Weight Tracker</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -482,7 +482,14 @@
                 responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { grid: { color: 'rgba(204, 213, 174, 0.15)' }, ticks: { color: '#7a7366', font: { family: 'Urbanist', weight: '700' } } },
+                    y: { 
+                        grid: { color: 'rgba(204, 213, 174, 0.15)' }, 
+                        ticks: { 
+                            color: '#7a7366', 
+                            font: { family: 'Urbanist', weight: '700' },
+                            maxTicksLimit: 5 // Reduced density on Y axis
+                        } 
+                    },
                     x: { 
                         grid: { display: false }, 
                         ticks: { 
@@ -491,7 +498,7 @@
                             maxRotation: 45,
                             minRotation: 45,
                             autoSkip: true,
-                            maxTicksLimit: 10
+                            maxTicksLimit: 4 // Reduced density on X axis
                         } 
                     }
                 }
