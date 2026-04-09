@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Scale Vibe | Weight Tracker</title>
     
     <!-- Favicon (Encoded SVG) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23344e41'/%3E%3Ctext y='72' x='50' font-size='70' text-anchor='middle' font-family='serif' fill='%23fefae0'%3EO%3C/text%3E%3C/svg%3E">
     
-    <!-- Mobile App Icon -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23344e41'/%3E%3Ctext y='72' x='50' font-size='70' text-anchor='middle' font-family='serif' fill='%23fefae0'%3EO%3C/text%3E%3C/svg%3E">
+    <!-- Mobile App Icon (Apple Touch Icon) -->
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAYAAACov6OfAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD9WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI0NTQzYmIsIDIwMjIvMDYvMTMtMjI6MDY6MzggICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIiB4bWxuczpwaG90b3Nob3A9Imh0dHA6Ly9ucy5hZG9iZS5jb20vcGhvdG9zaG9wLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NQdGMvIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyNC4wIChNYWNpbnRvc2gpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyNC0wMS0wMVQxMjowMDowMC0wNTowMCIgeG1wOk1vZGlmeURhdGU9IjIwMjQtMDEtMDFUMTI6MDA6MDAtMDU6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDEtMDFUMTI6MDA6MDAtMDU6MDAiIGRjOmZvcm1hdD0iaW1hZ2UvcG5nIiBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIiBwaG90b3Nob3A6SUNDUHJvZmlsZT0ic1JHQiBJRUM2MTk2Ni0yLjEiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MThmMWI0ZTctMDZiMS00ZDNiLTg0NWYtNzE0YmUyZGE5Zjk4IiB4bXBNTTpEb2N1bWVudElEPSJhZG9iZTpkb2NpZDpwaG90b3Nob3A6MmYxZGU0MTYtMGYxYy0xMWVlLTg1ZWYtZWMzZGE5Zjg0NDRiIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6MThmMWI0ZTctMDZiMS00ZDNiLTg0NWYtNzE0YmUyZGE5Zjk4Ij4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDoxOGYxYjRlNy0wNmIxLTRkM2ItODQ1Zi03MTRiZTJkYTlmOTgiIHN0RXZ0OndoZW49IjIwMjQtMDEtMDFUMTI6MDA6MDAtMDU6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCAyNC4wIChNYWNpbnRvc2gpIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pg68SjMAAAUnSURBVHic7Z1PaxRRFId98Vv05MGLBw96ExE9eDGiB0U8eNGrB8GDBw8ePCl6ExF6VPRmRE9G9KAm4sGLB9GrB8GDB/8O++7I9+5msptvkk1m8v7BYXdm2e68ee+9mXnZ7fR+X2AAp6U9ADBeIDQIA6FBCIDQIAyEBiEAQoMwEBqEAAgNwkBoEAIgNAgDoUEIgNAgDIQGIQBCgzAQGoQACA3CQGgQAiA0CAOhQQiA0CAMhAYhAEKDMBAahAAIDcJAYTUA6D6f7/60vV6vY3U8OAsNoE8U6h/vVz83u4eO7f97W29/7N+1NrfatjP77uP6Zrd77OnVze998A2f0G8S/D6fP3Z8fLx76OTo6Kizv78vMv8/0v39fVv/fKva2NhYm5mZ6R48eHDlZzGf99ePZ2EAVOa6f/zR4eHh2uTkZOfw4cO9vb09W5XpP/v7+2uTk5Nr8vWHDh2asK9/m/P5SgL63n89Z7F/X6p/vF85m99TzN60AejfD88n8K38Zp/q3/tX83uWmfzOqfnt7Lvf/U+a379Nf8S079vM839W/eP9fH+C8/lSAnq9586dq6PjX5V6+vTp7sLCgvR5Xl5erps+f74V5t7eXj09Pd19/Phxq+qO69evdx8+fCid88mTJ7uvX7+W/u5D9X3945vK6f1P96v++f0JzvdLCej7BwcHe9+S6U/6/Pnz3VOnTvXOnDmzhM3vOXPmTPfUqVPV+p2Xv/fPnz8vXf+4atvO69evt86ePduY/X9m/y/V7/5O8/v/PPeW28zzf0p5fv855/OlBPT9S5curSPjX/L7+PHjvZmZmaU+f7fO/Pw8Nb76fG05u7O/vy977p+vP99LCH7/T/v8pXN+u9vnT6p/P6H53VPzuzn991D9PZPfK83vX+R8vpSA7ezWrVs1ZPy7UpcuXdqt1++p+U+fPq3W7fze0tKStO8+OndsbEx6X98nZreVv8Z86pzP73Z7fvvP5Uv3678zP9875/S1mG01X91fSjE/8N/vK9XfX8z6q/pL9/eO9p8t6fT9N7V/74X6fXf798p3LhDqK0KDMBAahAAIDcJAYTUA9vYOtRkC9Hpd6X87Ozs17X/fXq8rnXP3pG1nd7R/U9M+mN2fau0/97R/vV7XlY4/X9vOLXN/V/nOBUKDMBBahAAIDcJAYTUAqD6f63Yf7fU60v2Zzf/XUv6UqT7f7vW57+f3P37/v6X8Kd87/m71d3Xf7/6O5vd3M9Xft/r7i/p7J+fzhY7WAKB97rU+3mrtf19fX+vX69e9YmS8v19f/8eSjLfqU+f8Z3O+Z/p/Zf6t5uT8XkKz2/17U3+XzG4vof6+Ue8Y7z9eUr9z/L90zt36eKn5/Z9Mv6t7S/379Y5Z63uX8vlCAtp/uV7fNn7fO/76Wv37f9rncL9OnTpV9/YOnTlzZscvLy/vWl9fX8Lm9/D88fGf7tWvH/99S7Pbu9+Z5/+U8vxN383vGfV77vbt7/uT565666v+vW6v17f7P3Z7x3WvGNk9fvjwwZp96n99/M79D9XvL57zzr9/bHh4+Krx+8YvN9U7xnu/Uv97U39X7R2z26v1f6+O2Y3t9v2ZffuNff6/pBwZ+m4ZCARC6AcDQQGhcICQYCDUIBSEAiEEAoEAg9AcAAsDQREBYMCAsCBEWCAsDBQXCAsCBEGCAWDAgLAgRFggLAwUFwgLAgRBggFgwICwIERX4B38vQpG3B4pGAAAAAElFTkSuQmCC">
+    <link rel="icon" type="image/png" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAYAAACov6OfAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD9WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI0NTQzYmIsIDIwMjIvMDYvMTMtMjI6MDY6MzggICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIiB4bWxuczpwaG90b3Nob3A9Imh0dHA6Ly9ucy5hZG9iZS5jb20vcGhvdG9zaG9wLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NQdGMvIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyNC4wIChNYWNpbnRvc2gpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyNC0wMS0wMVQxMjowMDowMC0wNTowMCIgeG1wOk1vZGlmeURhdGU9IjIwMjQtMDEtMDFUMTI6MDA6MDAtMDU6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjQtMDEtMDFUMTI6MDA6MDAtMDU6MDAiIGRjOmZvcm1hdD0iaW1hZ2UvcG5nIiBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIiBwaG90b3Nob3A6SUNDUHJvZmlsZT0ic1JHQiBJRUM2MTk2Ni0yLjEiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MThmMWI0ZTctMDZiMS00ZDNiLTg0NWYtNzE0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">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Scale Vibe">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,7 +49,10 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
+            /* Fixed: Ensure background covers safe areas and full viewport */
+            min-height: 100vh;
+            min-height: 100dvh;
+            background-color: var(--forest-deep);
         }
 
         body {
@@ -59,9 +64,11 @@
             display: flex;
             flex-direction: column; 
             align-items: center;
-            min-height: 100vh;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            /* Extra padding for safe area fit-cover */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         #lockScreen {
@@ -230,7 +237,8 @@
 
     <div class="card">
         <div class="chart-header">
-            <span class="chart-title">Last 30 Days</span>
+            <!-- Changed back from "Last 30 Days" -->
+            <span class="chart-title">How it's going</span>
         </div>
         <div style="height: 240px; position: relative;">
             <canvas id="weightChart"></canvas>
@@ -446,7 +454,6 @@
 
     function renderChart() {
         const ctx = document.getElementById('weightChart').getContext('2d');
-        // Changed from slice(0, 14) to slice(0, 30) for default 30-day view
         const displayData = [...weightData].slice(0, 30).reverse();
         if (myChart) myChart.destroy();
         if (!displayData.length) return;
@@ -479,7 +486,7 @@
                             maxRotation: 45,
                             minRotation: 45,
                             autoSkip: true,
-                            maxTicksLimit: 10 // Reduces density of labels for better readability
+                            maxTicksLimit: 10
                         } 
                     }
                 }
