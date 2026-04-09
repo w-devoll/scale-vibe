@@ -259,6 +259,8 @@
     const APP_PIN = "8765";
     const ENCODED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5MGgtVjBiRFo1TnFyd1dWd0QtQm9XdVNUdk0wMngwSWdfMkVBaHQ5aXp5NVhORjdXdmNIbmo1NVZCY0YzVUxnbUR6QS9leGVj";
     const GOOGLE_SCRIPT_URL = ENCODED_URL ? atob(ENCODED_URL) : "";
+    const MAX_WEIGHT = 250;
+    const MIN_WEIGHT = 40;
 
     let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
     let myChart = null;
@@ -331,10 +333,15 @@
     async function addEntry() {
         const input = document.getElementById('weightInput');
         const status = document.getElementById('status');
-        const val = input.value;
+        const val = parseFloat(input.value);
 
         if (!val || isNaN(val)) {
             status.innerText = "Please enter a valid weight";
+            return;
+        }
+
+        if (val > MAX_WEIGHT || val < MIN_WEIGHT) {
+            status.innerText = `Please enter a weight between ${MIN_WEIGHT} and ${MAX_WEIGHT}`;
             return;
         }
 
@@ -347,7 +354,7 @@
             id: Date.now(),
             date: displayDate, 
             fullDate: timestamp,
-            weight: parseFloat(val) 
+            weight: val 
         };
 
         weightData.unshift(newEntry);
@@ -369,10 +376,7 @@
     }
 
     async function syncFromCloud() {
-        if (!GOOGLE_SCRIPT_URL) {
-            console.error("No Sync URL configured");
-            return;
-        }
+        if (!GOOGLE_SCRIPT_URL) return;
 
         const btn = document.getElementById('syncBtn');
         const status = document.getElementById('status');
@@ -387,8 +391,6 @@
             if (!response.ok) throw new Error('Network response not ok');
             
             let data = await response.json();
-            
-            // Unpack nested objects (common with Apps Script results)
             let rows = Array.isArray(data) ? data : (data.data || data.values || []);
             
             if (!rows.length) {
@@ -401,23 +403,27 @@
             rows.forEach((row) => {
                 if (!row || typeof row !== 'object') return;
                 
-                // If it's an array row (standard Sheets export)
                 if (Array.isArray(row)) {
                     let weight = null;
                     let dateObj = null;
 
-                    row.forEach(cell => {
-                        const num = parseFloat(cell);
-                        // Identify weight (Reasonable human range)
-                        if (!isNaN(num) && num > 30 && num < 600 && weight === null) {
-                            weight = num;
-                        } 
-                        // Identify date
-                        else if (cell && cell !== "") {
+                    // Step 1: Detect and claim Dates first
+                    row.forEach((cell, idx) => {
+                        if (typeof cell === 'string' && (cell.includes('/') || cell.includes('-') || cell.includes(','))) {
                             const d = new Date(cell);
                             if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
                                 dateObj = d;
+                                row[idx] = null; 
                             }
+                        }
+                    });
+
+                    // Step 2: Detect weights with strict 250 limit (avoids years like 2026)
+                    row.forEach(cell => {
+                        if (cell === null) return;
+                        const num = parseFloat(cell);
+                        if (!isNaN(num) && num >= MIN_WEIGHT && num <= MAX_WEIGHT && weight === null) {
+                            weight = num;
                         }
                     });
 
@@ -431,20 +437,22 @@
                         });
                     }
                 } 
-                // If it's an object (formatted JSON export)
                 else if (row.weight) {
-                    const d = new Date(row.fullDate || row.date || Date.now());
-                    cloudEntries.push({
-                        id: row.id || d.getTime(),
-                        fullDate: d.toISOString(),
-                        date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                        weight: parseFloat(row.weight)
-                    });
+                    const weightVal = parseFloat(row.weight);
+                    if (weightVal >= MIN_WEIGHT && weightVal <= MAX_WEIGHT) {
+                        const d = new Date(row.fullDate || row.date || Date.now());
+                        cloudEntries.push({
+                            id: row.id || d.getTime(),
+                            fullDate: d.toISOString(),
+                            date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                            weight: weightVal
+                        });
+                    }
                 }
             });
 
             if (cloudEntries.length === 0) {
-                status.innerText = "No readable weights found";
+                status.innerText = "No valid weights found";
             } else {
                 const mergedData = [...weightData];
                 cloudEntries.forEach(cloudItem => {
@@ -459,10 +467,10 @@
                 weightData = mergedData;
                 localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
                 updateUI();
-                status.innerText = `Found ${cloudEntries.length} items`;
+                status.innerText = `Synced ${cloudEntries.length} entries`;
             }
         } catch (e) {
-            console.error("Sync Logic Error:", e);
+            console.error("Sync Error:", e);
             status.innerText = "Connection failed";
         } finally {
             btn.innerText = originalText;
