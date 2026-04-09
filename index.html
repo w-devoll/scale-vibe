@@ -380,72 +380,91 @@
         
         btn.innerText = "...";
         btn.disabled = true;
-        status.innerText = "Fetching data...";
+        status.innerText = "Connecting...";
 
         try {
             const response = await fetch(GOOGLE_SCRIPT_URL);
             if (!response.ok) throw new Error('Network response was not ok');
             
-            const rawData = await response.json();
-            if (!Array.isArray(rawData)) throw new Error('Data is not an array');
+            let rawData = await response.json();
+            
+            // Handle wrapper objects like { data: [...] } or { status: 'success', values: [...] }
+            if (!Array.isArray(rawData)) {
+                if (rawData.data && Array.isArray(rawData.data)) rawData = rawData.data;
+                else if (rawData.values && Array.isArray(rawData.values)) rawData = rawData.values;
+                else throw new Error('Cloud data format unrecognized');
+            }
 
             const cloudEntries = [];
             
-            rawData.forEach(row => {
-                if (Array.isArray(row) && row.length >= 3) {
-                    const weightVal = parseFloat(row[2]);
-                    if (!isNaN(weightVal)) {
-                        let d = new Date(row[0]);
-                        // Stronger string cleaning for Google Sheets date exports
-                        if (isNaN(d.getTime()) && typeof row[0] === 'string') {
-                            // Clean common noise from GSheets strings
-                            let cleanStr = row[0].trim().replace('T', ' ').split('.')[0];
-                            d = new Date(cleanStr.replace(/-/g, '/'));
-                        }
+            rawData.forEach((row, idx) => {
+                // Skip header or empty rows
+                if (!Array.isArray(row) || row.length < 2) return;
 
+                // Try to identify which column is weight and which is date
+                // We assume weight is a number and date is a string that can be parsed
+                let weightVal = NaN;
+                let dateVal = null;
+                let dateStr = "";
+
+                for (let cell of row) {
+                    const parsedNum = parseFloat(cell);
+                    // If it's a number and not obviously a timestamp (like > 2050) or a year
+                    if (!isNaN(parsedNum) && isNaN(weightVal) && parsedNum < 1000) {
+                        weightVal = parsedNum;
+                    } else if (cell && typeof cell === 'string') {
+                        // Attempt date parse
+                        let cleanDate = cell.trim().replace('T', ' ').split('.')[0].replace(/-/g, '/');
+                        let d = new Date(cleanDate);
                         if (!isNaN(d.getTime())) {
-                            cloudEntries.push({
-                                fullDate: d.toISOString(),
-                                date: row[1] || d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                                weight: weightVal,
-                                id: d.getTime()
-                            });
+                            dateVal = d;
+                            dateStr = cell;
+                        }
+                    } else if (cell instanceof Date || (typeof cell === 'number' && cell > 40000)) {
+                        // Google Sheets serial dates are numbers > 40000
+                        let d = new Date(cell);
+                        if (!isNaN(d.getTime())) {
+                            dateVal = d;
                         }
                     }
                 }
-            });
 
-            // Use a combined approach: if the timestamp matches OR the weight/date combination
-            // matches exactly, consider it a duplicate to avoid screen clutter.
-            const mergedData = [...weightData];
-            
-            cloudEntries.forEach(cloudItem => {
-                const isDuplicate = mergedData.some(localItem => 
-                    localItem.fullDate === cloudItem.fullDate || 
-                    (localItem.weight === cloudItem.weight && localItem.date === cloudItem.date)
-                );
-                
-                if (!isDuplicate) {
-                    mergedData.push(cloudItem);
+                if (!isNaN(weightVal) && dateVal) {
+                    cloudEntries.push({
+                        fullDate: dateVal.toISOString(),
+                        date: dateVal.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        weight: weightVal,
+                        id: dateVal.getTime()
+                    });
                 }
             });
-            
-            // Sort final set newest to oldest
-            mergedData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
-            
-            weightData = mergedData;
-            localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
-            
-            // Re-render everything
-            updateUI();
-            status.innerText = "Sync complete";
+
+            if (cloudEntries.length === 0) {
+                console.warn("No valid entries found in the data stream", rawData);
+                status.innerText = "No data found in cloud";
+            } else {
+                const mergedData = [...weightData];
+                cloudEntries.forEach(cloudItem => {
+                    const isDuplicate = mergedData.some(localItem => 
+                        localItem.fullDate === cloudItem.fullDate || 
+                        (Math.abs(localItem.weight - cloudItem.weight) < 0.01 && localItem.date === cloudItem.date)
+                    );
+                    if (!isDuplicate) mergedData.push(cloudItem);
+                });
+
+                mergedData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+                weightData = mergedData;
+                localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+                updateUI();
+                status.innerText = `Synced ${cloudEntries.length} items`;
+            }
         } catch (e) {
-            console.error("Sync process error:", e);
-            status.innerText = "Sync failed. Check connection.";
+            console.error("Detailed Sync Error:", e);
+            status.innerText = "Sync error. Check console.";
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
-            setTimeout(() => { if (status.innerText !== "Logged") status.innerText = ""; }, 3000);
+            setTimeout(() => { if (!status.innerText.includes("Logged")) status.innerText = ""; }, 4000);
         }
     }
 
