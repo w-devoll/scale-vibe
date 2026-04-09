@@ -392,14 +392,15 @@
             const cloudEntries = [];
             
             rawData.forEach(row => {
-                // Expecting row as [FullTimestamp (A), ShortDate (B), Weight (C)]
                 if (Array.isArray(row) && row.length >= 3) {
                     const weightVal = parseFloat(row[2]);
                     if (!isNaN(weightVal)) {
                         let d = new Date(row[0]);
-                        // Fix for common GSheets date string quirks
+                        // Stronger string cleaning for Google Sheets date exports
                         if (isNaN(d.getTime()) && typeof row[0] === 'string') {
-                            d = new Date(row[0].replace(/-/g, '/'));
+                            // Clean common noise from GSheets strings
+                            let cleanStr = row[0].trim().replace('T', ' ').split('.')[0];
+                            d = new Date(cleanStr.replace(/-/g, '/'));
                         }
 
                         if (!isNaN(d.getTime())) {
@@ -414,18 +415,28 @@
                 }
             });
 
-            // Merge using fullDate as unique key
-            const mergedMap = new Map();
-            // Start with current local data
-            weightData.forEach(item => mergedMap.set(item.fullDate, item));
-            // Add/Overwrite with cloud data
-            cloudEntries.forEach(item => mergedMap.set(item.fullDate, item));
+            // Use a combined approach: if the timestamp matches OR the weight/date combination
+            // matches exactly, consider it a duplicate to avoid screen clutter.
+            const mergedData = [...weightData];
             
-            weightData = Array.from(mergedMap.values());
-            // Sort newest to oldest
-            weightData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+            cloudEntries.forEach(cloudItem => {
+                const isDuplicate = mergedData.some(localItem => 
+                    localItem.fullDate === cloudItem.fullDate || 
+                    (localItem.weight === cloudItem.weight && localItem.date === cloudItem.date)
+                );
+                
+                if (!isDuplicate) {
+                    mergedData.push(cloudItem);
+                }
+            });
             
+            // Sort final set newest to oldest
+            mergedData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+            
+            weightData = mergedData;
             localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+            
+            // Re-render everything
             updateUI();
             status.innerText = "Sync complete";
         } catch (e) {
