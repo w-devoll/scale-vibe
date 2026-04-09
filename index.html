@@ -88,10 +88,10 @@
             padding: 15px;
             margin: 20px 0;
             letter-spacing: 10px;
-            -webkit-text-security: disc; /* Hide PIN as dots */
+            -webkit-text-security: disc;
         }
 
-        .container { width: 100%; max-width: 440px; display: none; } /* Hidden by default */
+        .container { width: 100%; max-width: 440px; display: none; }
 
         header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; padding: 10px 4px; }
 
@@ -244,12 +244,6 @@
 </div>
 
 <script>
-    /**
-     * SECURITY & URL SETTINGS:
-     * 1. Get your Google Web App URL.
-     * 2. Go to https://www.base64encode.org/ and encode it.
-     * 3. Paste that encoded string into ENCODED_URL below.
-     */
     const APP_PIN = "8765";
     const ENCODED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5MGgtVjBiRFo1TnFyd1dWd0QtQm9XdVNUdk0wMngwSWdfMkVBaHQ5aXp5NVhORjdXdmNIbmo1NVZCY0YzVUxnbUR6QS9leGVj";
     const GOOGLE_SCRIPT_URL = ENCODED_URL ? atob(ENCODED_URL) : "";
@@ -257,7 +251,6 @@
     let weightData = JSON.parse(localStorage.getItem('vibe_weights_v1')) || [];
     let myChart = null;
 
-    // PIN Check Logic
     function checkPin() {
         const input = document.getElementById('pinInput');
         const error = document.getElementById('pinError');
@@ -276,7 +269,6 @@
         }
     }
 
-    // Allow Enter key for PIN
     document.getElementById('pinInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') checkPin();
     });
@@ -363,10 +355,6 @@
         setTimeout(() => { status.innerText = ""; }, 3000);
     }
 
-    /**
-     * SYNC FROM CLOUD: 
-     * Requires update to Google Apps Script to handle GET requests
-     */
     async function syncFromCloud() {
         if (!GOOGLE_SCRIPT_URL) {
             alert("No Sync URL configured. Check your code.");
@@ -382,18 +370,28 @@
         status.innerText = "Fetching data...";
 
         try {
-            // Apps Script requires a GET request to return data
             const response = await fetch(GOOGLE_SCRIPT_URL);
-            const data = await response.json();
+            const rawData = await response.json();
 
-            if (data && Array.isArray(data)) {
-                // Merge data (prevent duplicates based on ID or FullDate)
+            if (rawData && Array.isArray(rawData)) {
+                const formattedData = rawData.map(item => {
+                    // Logic for [FullTimestamp, ShortDate, Weight]
+                    if (Array.isArray(item)) {
+                        return {
+                            fullDate: item[0],
+                            date: item[1],
+                            weight: parseFloat(item[2]),
+                            id: new Date(item[0]).getTime() || Date.now()
+                        };
+                    }
+                    return item; 
+                }).filter(item => item.weight && item.fullDate);
+
                 const existingDates = new Set(weightData.map(d => d.fullDate));
-                const newItems = data.filter(item => !existingDates.has(item.fullDate));
+                const newItems = formattedData.filter(item => !existingDates.has(item.fullDate));
                 
                 if (newItems.length > 0) {
                     weightData = [...newItems, ...weightData];
-                    // Sort descending by date
                     weightData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
                     localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
                     updateUI();
