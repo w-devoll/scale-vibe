@@ -401,53 +401,50 @@
             const cloudEntries = [];
             
             rows.forEach((row) => {
-                if (!row || typeof row !== 'object') return;
+                if (!row) return;
                 
-                if (Array.isArray(row)) {
-                    let weight = null;
-                    let dateObj = null;
+                let weight = null;
+                let dateObj = null;
 
-                    // Step 1: Detect and claim Dates first
-                    row.forEach((cell, idx) => {
-                        if (typeof cell === 'string' && (cell.includes('/') || cell.includes('-') || cell.includes(','))) {
+                // Handle Object-based rows (usually from custom JSON proxies)
+                if (typeof row === 'object' && !Array.isArray(row)) {
+                    weight = parseFloat(row.weight || row.Weight || row.value);
+                    const dateStr = row.fullDate || row.date || row.Date || row.timestamp;
+                    if (dateStr) dateObj = new Date(dateStr);
+                } 
+                // Handle Array-based rows (Standard Sheets output)
+                else if (Array.isArray(row)) {
+                    row.forEach(cell => {
+                        if (cell === null || cell === undefined || cell === "") return;
+                        
+                        // Look for a date
+                        if (isNaN(cell) && typeof cell === 'string') {
                             const d = new Date(cell);
                             if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
                                 dateObj = d;
-                                row[idx] = null; 
+                            }
+                        }
+                        
+                        // Look for a weight (Strictly under 250 to avoid years)
+                        const num = parseFloat(cell);
+                        if (!isNaN(num) && num >= MIN_WEIGHT && num <= MAX_WEIGHT && weight === null) {
+                            // Secondary check: if it looks like a year (e.g., 2024, 2025), ignore it
+                            if (num < 1900) { 
+                                weight = num;
                             }
                         }
                     });
+                }
 
-                    // Step 2: Detect weights with strict 250 limit (avoids years like 2026)
-                    row.forEach(cell => {
-                        if (cell === null) return;
-                        const num = parseFloat(cell);
-                        if (!isNaN(num) && num >= MIN_WEIGHT && num <= MAX_WEIGHT && weight === null) {
-                            weight = num;
-                        }
+                // If we found a weight, add it
+                if (weight !== null && weight >= MIN_WEIGHT && weight <= MAX_WEIGHT) {
+                    const finalDate = (dateObj && !isNaN(dateObj.getTime())) ? dateObj : new Date();
+                    cloudEntries.push({
+                        id: finalDate.getTime() + Math.random(),
+                        fullDate: finalDate.toISOString(),
+                        date: finalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        weight: weight
                     });
-
-                    if (weight) {
-                        const finalDate = dateObj || new Date();
-                        cloudEntries.push({
-                            id: finalDate.getTime() + Math.random(),
-                            fullDate: finalDate.toISOString(),
-                            date: finalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                            weight: weight
-                        });
-                    }
-                } 
-                else if (row.weight) {
-                    const weightVal = parseFloat(row.weight);
-                    if (weightVal >= MIN_WEIGHT && weightVal <= MAX_WEIGHT) {
-                        const d = new Date(row.fullDate || row.date || Date.now());
-                        cloudEntries.push({
-                            id: row.id || d.getTime(),
-                            fullDate: d.toISOString(),
-                            date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                            weight: weightVal
-                        });
-                    }
                 }
             });
 
@@ -456,13 +453,15 @@
             } else {
                 const mergedData = [...weightData];
                 cloudEntries.forEach(cloudItem => {
+                    // Avoid duplicates based on date (same day) and very similar weight
                     const exists = mergedData.some(local => 
                         (local.fullDate && local.fullDate.split('T')[0] === cloudItem.fullDate.split('T')[0]) &&
-                        Math.abs(local.weight - cloudItem.weight) < 0.05
+                        Math.abs(local.weight - cloudItem.weight) < 0.01
                     );
                     if (!exists) mergedData.push(cloudItem);
                 });
 
+                // Sort descending (newest first)
                 mergedData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
                 weightData = mergedData;
                 localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
