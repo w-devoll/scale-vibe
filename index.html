@@ -206,7 +206,7 @@
         <h1 style="font-size: 32px; text-shadow: none; margin-bottom: 10px;">Weights</h1>
         <p style="font-family: 'Akaya Kanadaka'; font-size: 18px; opacity: 0.8;">Enter PIN to unlock</p>
         <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••">
-        <button class="primary-btn" onclick="checkPin()" style="width: 100%; margin-top: 10px;">unlock</button>
+        <button class="primary-btn" onclick="checkPin()" style="width: 100%; margin-top: 10px;">Good morning!</button>
         <div id="pinError" style="color: var(--danger); margin-top: 15px; font-family: 'Akaya Kanadaka'; min-height: 20px;"></div>
     </div>
 </div>
@@ -222,7 +222,7 @@
             <div class="input-group" style="width: 100%;">
                 <input type="number" id="weightInput" step="0.1" pattern="\d*" placeholder="00.0" inputmode="decimal">
             </div>
-            <button class="primary-btn" onclick="addEntry()">log</button>
+            <button class="primary-btn" onclick="addEntry()">Whoosh it!</button>
         </div>
         <div id="status"></div>
     </div>
@@ -258,8 +258,8 @@
         <div class="chart-header">
             <span class="chart-title">History</span>
             <div style="display:flex; gap: 12px;">
-                <button class="action-btn success" id="syncBtn" onclick="syncFromCloud()">sync</button>
-                <button class="action-btn danger" onclick="clearHistory()" title="Clear All">clear</button>
+                <button class="action-btn success" id="syncBtn" onclick="syncFromCloud()">Sync</button>
+                <button class="action-btn danger" onclick="clearHistory()" title="Clear All">Clear</button>
             </div>
         </div>
         <div id="historyContainer"></div>
