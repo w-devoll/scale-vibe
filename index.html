@@ -51,8 +51,7 @@
             margin: 0;
             padding: 20px 16px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-direction: column; align-items: center;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
@@ -375,34 +374,47 @@
 
             if (rawData && Array.isArray(rawData)) {
                 const formattedData = rawData.map(item => {
-                    // Logic for [FullTimestamp, ShortDate, Weight]
-                    if (Array.isArray(item)) {
+                    // Logic for [FullTimestamp (A), ShortDate (B), Weight (C)]
+                    if (Array.isArray(item) && item.length >= 3) {
+                        const rawTimestamp = item[0];
+                        const shortDate = item[1];
+                        const weight = parseFloat(item[2]);
+
+                        // More robust date parsing for Google Sheets strings
+                        let d = new Date(rawTimestamp);
+                        // If it's the standard GSheets "3/7/2026 7:48:17" it might need help
+                        if (isNaN(d.getTime()) && typeof rawTimestamp === 'string') {
+                            // Try to parse common GSheets formats manually or via replacements
+                            d = new Date(rawTimestamp.replace(/-/g, '/'));
+                        }
+
                         return {
-                            fullDate: item[0],
-                            date: item[1],
-                            weight: parseFloat(item[2]),
-                            id: new Date(item[0]).getTime() || Date.now()
+                            fullDate: !isNaN(d.getTime()) ? d.toISOString() : rawTimestamp,
+                            date: shortDate,
+                            weight: weight,
+                            id: !isNaN(d.getTime()) ? d.getTime() : Date.now()
                         };
                     }
                     return item; 
-                }).filter(item => item.weight && item.fullDate);
+                }).filter(item => item && !isNaN(item.weight) && item.fullDate);
 
-                const existingDates = new Set(weightData.map(d => d.fullDate));
-                const newItems = formattedData.filter(item => !existingDates.has(item.fullDate));
+                // Use a map to handle duplicates, keeping the newest local or cloud data
+                const mergedMap = new Map();
+                // Add existing local data first
+                weightData.forEach(d => mergedMap.set(d.fullDate, d));
+                // Overwrite/Add cloud data
+                formattedData.forEach(d => mergedMap.set(d.fullDate, d));
                 
-                if (newItems.length > 0) {
-                    weightData = [...newItems, ...weightData];
-                    weightData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
-                    localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
-                    updateUI();
-                    status.innerText = `Imported ${newItems.length} entries`;
-                } else {
-                    status.innerText = "Already up to date";
-                }
+                weightData = Array.from(mergedMap.values());
+                weightData.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+                
+                localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
+                updateUI();
+                status.innerText = "Sync complete";
             }
         } catch (e) {
             console.error("Sync failed", e);
-            status.innerText = "Sync failed. Check script settings.";
+            status.innerText = "Sync failed. Check connection.";
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
@@ -418,7 +430,8 @@
 
         const rollingMedians = displayData.map((_, index) => {
             const chrono = weightData.slice().reverse();
-            const originalIndex = chrono.findIndex(item => item.id === displayData[index].id);
+            const originalItem = displayData[index];
+            const originalIndex = chrono.findIndex(item => item.fullDate === originalItem.fullDate);
             const window = chrono.slice(Math.max(0, originalIndex - 6), originalIndex + 1).map(d => d.weight);
             return getMedianForRange(window);
         });
@@ -450,13 +463,13 @@
         }
         let html = '<ul class="history-list">';
         weightData.slice(0, 5).forEach(item => {
-            html += `<li class="history-item"><span class="history-date">${item.date}</span><div style="display:flex; align-items:center; gap:8px;"><span class="history-val">${item.weight}</span><button class="delete-icon-btn" onclick="deleteEntry(${item.id})">&times;</button></div></li>`;
+            html += `<li class="history-item"><span class="history-date">${item.date}</span><div style="display:flex; align-items:center; gap:8px;"><span class="history-val">${item.weight}</span><button class="delete-icon-btn" onclick="deleteEntry('${item.fullDate}')">&times;</button></div></li>`;
         });
         container.innerHTML = html + '</ul>';
     }
 
-    function deleteEntry(id) {
-        weightData = weightData.filter(item => item.id !== id);
+    function deleteEntry(fullDate) {
+        weightData = weightData.filter(item => item.fullDate !== fullDate);
         localStorage.setItem('vibe_weights_v1', JSON.stringify(weightData));
         updateUI();
     }
